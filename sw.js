@@ -1,4 +1,3 @@
-// Sube el número de versión cada vez que cambies index.html para forzar la actualización
 const CACHE = 'retohucha-v1';
 const CORE = ['./', './index.html', './manifest.webmanifest',
   './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png', './icons/apple-touch-icon.png'];
