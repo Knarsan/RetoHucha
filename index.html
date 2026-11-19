@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1D3FD8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="RetoHucha">
+<title>RetoHucha</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EDF0F6; --surface:#FFFFFF; --ink:#18223D; --muted:#5A6684; --line:#D3D9E7;
+  --cobalt:#1D3FD8; --on-cobalt:#FFFFFF; --coin:#F2B33D; --coin-edge:#D18F12; --coin-ink:#4A2F00;
+  --ok:#14805A; --danger:#C2362B; --scrim:rgba(15,21,36,.55);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1524; --surface:#19213A; --ink:#E7EBF5; --muted:#9AA5C2; --line:#2B3657;
+    --cobalt:#7C93FF; --on-cobalt:#0F1524; --coin:#F2B33D; --coin-edge:#B57A08; --coin-ink:#3A2500;
+    --ok:#3FC48C; --danger:#FF7A6E; --scrim:rgba(0,0,0,.65);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1524; --surface:#19213A; --ink:#E7EBF5; --muted:#9AA5C2; --line:#2B3657;
+  --cobalt:#7C93FF; --on-cobalt:#0F1524; --coin:#F2B33D; --coin-edge:#B57A08; --coin-ink:#3A2500;
+  --ok:#3FC48C; --danger:#FF7A6E; --scrim:rgba(0,0,0,.65);
+  color-scheme:dark;
+}
+:root{ box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); }
+html{ scroll-padding-top:env(safe-area-inset-top,0px); background:var(--bg); }
+*,*::before,*::after{ box-sizing:inherit; }
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:'Bricolage Grotesque', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-size:16px; line-height:1.45; -webkit-tap-highlight-color:transparent;
+  font-variant-numeric:tabular-nums;
+}
+body::before{ content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top,0px); z-index:10; background:var(--bg); }
+button,input,select,textarea{ font:inherit; color:inherit; }
+button{ cursor:pointer; }
+:focus-visible{ outline:3px solid var(--cobalt); outline-offset:2px; }
+
+.wrap{ max-width:720px; margin:0 auto; padding:0 16px 96px; }
+
+/* Barra superior */
+.top{ display:flex; align-items:center; gap:10px; padding:14px 0 6px; }
+.brand{ font-weight:800; font-size:1.05rem; letter-spacing:-.01em; margin-right:auto; display:flex; align-items:center; gap:8px; }
+.brand-mark{ width:26px; height:26px; border-radius:50%; background:var(--coin); box-shadow:inset 0 0 0 3px var(--coin-edge); display:grid; place-items:center; color:var(--coin-ink); font-size:.8rem; font-weight:800; }
+.picker{ appearance:none; background:var(--surface); border:1px solid var(--line); border-radius:999px; padding:8px 32px 8px 14px; max-width:46vw; font-weight:600;
+  background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
+  background-position:calc(100% - 17px) 55%,calc(100% - 12px) 55%; background-size:5px 5px; background-repeat:no-repeat; }
+.icon-btn{ width:40px; height:40px; border-radius:50%; border:1px solid var(--line); background:var(--surface); display:grid; place-items:center; }
+.icon-btn svg{ width:20px; height:20px; }
+
+/* Bote */
+.bote{ position:sticky; top:env(safe-area-inset-top,0px); z-index:5; background:var(--bg); padding:10px 0 14px; }
+.amount{ font-size:clamp(2.4rem, 11vw, 3.6rem); font-weight:800; letter-spacing:-.035em; line-height:1; margin:0; }
+.goal{ color:var(--muted); margin:6px 0 12px; font-size:.98rem; }
+.goal strong{ color:var(--ink); font-weight:600; }
+.bar{ height:12px; border-radius:999px; background:var(--line); overflow:hidden; }
+.bar > span{ display:block; height:100%; width:0; background:var(--coin); border-radius:inherit; box-shadow:inset 0 -2px 0 var(--coin-edge); transition:width .4s ease; }
+.meta{ display:flex; justify-content:space-between; color:var(--muted); font-size:.88rem; margin-top:6px; }
+.actions{ display:flex; gap:10px; margin-top:12px; }
+.btn{ border:0; border-radius:12px; padding:12px 16px; font-weight:600; background:var(--surface); border:1px solid var(--line); }
+.btn-primary{ background:var(--cobalt); color:var(--on-cobalt); border-color:transparent; flex:1; }
+.btn-danger{ background:var(--danger); color:#fff; border-color:transparent; }
+.btn:disabled{ opacity:.45; cursor:default; }
+.lock-btn{ display:flex; align-items:center; gap:6px; }
+.lock-btn svg{ width:18px; height:18px; flex:none; }
+.lock-btn[aria-pressed="false"]{ background:var(--coin); color:var(--coin-ink); border-color:var(--coin-edge); }
+.grid.locked .cell:not(.on){ color:var(--muted); }
+.cell{ user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; }
+.done{ display:none; margin-top:12px; padding:12px 14px; border-radius:12px; background:color-mix(in srgb,var(--ok) 14%,transparent); color:var(--ok); font-weight:600; }
+.done.show{ display:block; }
+
+/* Cuadrícula */
+.grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(46px,1fr)); gap:7px; margin-top:8px; }
+.cell{ aspect-ratio:1; border:1px solid var(--line); background:var(--surface); border-radius:10px; font-weight:600; font-size:.92rem; padding:0; display:grid; place-items:center; transition:border-radius .2s ease, background-color .2s ease; }
+.cell.small{ font-size:.72rem; }
+.cell.on{ background:var(--coin); color:var(--coin-ink); border-color:var(--coin-edge); border-radius:50%; box-shadow:inset 0 0 0 3px var(--coin-edge); transform:rotate(var(--r,0deg)); font-weight:800; }
+.cell.stamp{ animation:stamp .28s ease-out; }
+.cell.hint{ outline:3px solid var(--cobalt); outline-offset:2px; animation:pulse 1.2s ease-in-out 3; }
+@keyframes stamp{ from{ transform:scale(1.35) rotate(var(--r,0deg)); } to{ transform:scale(1) rotate(var(--r,0deg)); } }
+@keyframes pulse{ 50%{ outline-offset:6px; } }
+@media (prefers-reduced-motion: reduce){ .cell,.bar>span{ transition:none; } .cell.stamp,.cell.hint{ animation:none; } }
+
+/* Vacío */
+.empty{ text-align:center; padding:18vh 12px 0; }
+.empty h1{ font-size:2rem; letter-spacing:-.03em; margin:16px 0 8px; }
+.empty p{ color:var(--muted); margin:0 auto 22px; max-width:32ch; }
+.empty .brand-mark{ width:72px; height:72px; margin:0 auto; font-size:1.8rem; box-shadow:inset 0 0 0 7px var(--coin-edge); }
+
+/* Diálogos */
+dialog{ border:0; border-radius:20px; padding:0; background:var(--surface); color:var(--ink); width:min(440px, calc(100vw - 24px)); max-height:calc(100dvh - 40px); }
+dialog::backdrop{ background:var(--scrim); }
+.dlg{ padding:22px 20px 18px; }
+.dlg h2{ margin:0 0 14px; font-size:1.3rem; letter-spacing:-.02em; }
+.dlg p{ margin:0 0 14px; color:var(--muted); }
+.field{ display:block; margin-bottom:14px; }
+.field > span{ display:block; font-size:.9rem; color:var(--muted); margin-bottom:6px; }
+.input{ width:100%; padding:11px 12px; border-radius:10px; border:1px solid var(--line); background:var(--bg); }
+textarea.input{ min-height:110px; font-size:.8rem; resize:vertical; }
+.chips{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
+.chip{ border:1px solid var(--line); background:var(--bg); border-radius:999px; padding:7px 14px; font-weight:600; }
+.chip[aria-pressed="true"]{ background:var(--cobalt); color:var(--on-cobalt); border-color:transparent; }
+.preview{ background:var(--bg); border-radius:12px; padding:12px 14px; margin-bottom:16px; }
+.preview b{ font-size:1.4rem; letter-spacing:-.02em; }
+.row{ display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; }
+.menu-list{ display:grid; gap:8px; }
+.menu-list .btn{ text-align:left; width:100%; }
+.big{ font-size:3.2rem; font-weight:800; letter-spacing:-.04em; margin:4px 0 18px; line-height:1; }
+.err{ color:var(--danger); font-size:.88rem; min-height:1.2em; margin:-6px 0 10px; }
+
+/* Aviso */
+.toast{ position:fixed; left:50%; bottom:calc(16px + env(safe-area-inset-bottom,0px)); transform:translate(-50%,140%); background:var(--ink); color:var(--bg); padding:10px 10px 10px 16px; border-radius:14px; display:flex; align-items:center; gap:12px; max-width:calc(100vw - 24px); transition:transform .25s ease; z-index:20; }
+.toast.show{ transform:translate(-50%,0); }
+.toast button{ background:transparent; border:0; color:var(--coin); font-weight:800; padding:6px 8px; }
+[hidden]{ display:none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">€</span>RetoHucha</div>
+    <select class="picker" id="picker" aria-label="Hucha activa" hidden></select>
+    <button class="icon-btn" id="menuBtn" aria-label="Menú" hidden>
+      <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+    </button>
+  </header>
+
+  <section id="emptyView" class="empty" hidden>
+    <div class="brand-mark" aria-hidden="true">€</div>
+    <h1>Tu reto de ahorro</h1>
+    <p>Elige hasta qué número llegar y tacha cada casilla cuando ingreses esa cantidad.</p>
+    <button class="btn btn-primary" id="emptyCreate" style="flex:none;padding:14px 26px">Crear hucha</button>
+  </section>
+
+  <main id="mainView" hidden>
+    <section class="bote" aria-live="polite">
+      <p class="amount" id="saved">0 €</p>
+      <p class="goal">de <strong id="total">0 €</strong>, te faltan <strong id="left">0 €</strong></p>
+      <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="bar"><span id="barFill"></span></div>
+      <div class="meta"><span id="cellsCount">0 de 0 casillas</span><span id="pct">0 %</span></div>
+      <div class="done" id="doneMsg">Reto completado.</div>
+      <div class="actions">
+        <button class="btn btn-primary" id="randomBtn">Casilla al azar</button>
+        <button class="btn lock-btn" id="lockBtn" aria-pressed="true" aria-label="Candado"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path id="lockShackle" d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span id="lockLabel">Bloqueado</span></button>
+        <button class="btn" id="undoBtn" disabled>Deshacer</button>
+      </div>
+    </section>
+    <div class="grid locked" id="grid"></div>
+  </main>
+</div>
+
+<!-- Nueva hucha -->
+<dialog id="newDlg"><form method="dialog" class="dlg" id="newForm">
+  <h2 id="newTitle">Nueva hucha</h2>
+  <label class="field"><span>Nombre</span><input class="input" id="fName" maxlength="40" required></label>
+  <div class="field"><span>Hasta el número</span>
+    <div class="chips" id="nChips">
+      <button type="button" class="chip" data-n="100">100</button>
+      <button type="button" class="chip" data-n="200">200</button>
+      <button type="button" class="chip" data-n="365">365</button>
+    </div>
+    <input class="input" id="fN" type="number" inputmode="numeric" min="10" max="1000" step="1" required>
+  </div>
+  <label class="field"><span>Valor de cada número (€)</span>
+    <input class="input" id="fUnit" type="number" inputmode="decimal" min="0.01" max="100" step="0.01" required>
+  </label>
+  <div class="preview">Meta: <b id="fPreview">0 €</b></div>
+  <div class="err" id="fErr"></div>
+  <div class="row">
+    <button type="button" class="btn" data-close>Cancelar</button>
+    <button type="submit" class="btn btn-primary" style="flex:none" id="fSubmit">Crear hucha</button>
+  </div>
+</form></dialog>
+
+<!-- Menú -->
+<dialog id="menuDlg"><div class="dlg">
+  <h2 id="menuTitle">Hucha</h2>
+  <div class="menu-list">
+    <button class="btn" id="mNew">Nueva hucha</button>
+    <button class="btn" id="mRename">Cambiar nombre</button>
+    <button class="btn" id="mReset">Empezar de cero</button>
+    <button class="btn" id="mBackup">Copia de seguridad</button>
+    <button class="btn" id="mDelete" style="color:var(--danger)">Borrar hucha</button>
+  </div>
+  <div class="row" style="margin-top:14px"><button class="btn" data-close>Cerrar</button></div>
+</div></dialog>
+
+<!-- Azar -->
+<dialog id="randDlg"><div class="dlg">
+  <h2>Te toca ingresar</h2>
+  <p class="big" id="randAmount">0 €</p>
+  <div class="row">
+    <button class="btn" id="randOther">Otra casilla</button>
+    <button class="btn btn-primary" style="flex:none" id="randMark">Marcar como ingresada</button>
+  </div>
+</div></dialog>
+
+<!-- Confirmar -->
+<dialog id="confDlg"><div class="dlg">
+  <h2 id="confTitle">¿Seguro?</h2>
+  <p id="confText"></p>
+  <div class="row">
+    <button class="btn" id="confNo">Cancelar</button>
+    <button class="btn btn-primary" style="flex:none" id="confYes">Aceptar</button>
+  </div>
+</div></dialog>
+
+<!-- Copia de seguridad -->
+<dialog id="backDlg"><div class="dlg">
+  <h2>Copia de seguridad</h2>
+  <p>Copia este texto y guárdalo en una nota o envíatelo. Incluye todas tus huchas.</p>
+  <textarea class="input" id="backOut" readonly></textarea>
+  <div class="row" style="margin:10px 0 18px"><button class="btn" id="backCopy">Copiar</button></div>
+  <p>Para restaurar, pega aquí una copia. Sustituye todas las huchas actuales.</p>
+  <textarea class="input" id="backIn" placeholder="Pega aquí la copia"></textarea>
+  <div class="err" id="backErr" style="margin-top:6px"></div>
+  <div class="row">
+    <button class="btn" data-close>Cerrar</button>
+    <button class="btn btn-primary" style="flex:none" id="backRestore">Restaurar</button>
+  </div>
+</div></dialog>
+
+<div class="toast" id="toast" role="status"><span id="toastText"></span><button id="toastAction" hidden>Deshacer</button></div>
+
+<script>
+(function(){
+  const KEY = 'retohucha.v1';
+  const $ = id => document.getElementById(id);
+  let storageWarned = false;
+
+  // ---------- Estado ----------
+  function emptyState(){ return { huchas: [], activeId: null }; }
+  function valid(s){
+    return s && Array.isArray(s.huchas) && s.huchas.every(h =>
+      h && typeof h.id === 'string' && typeof h.name === 'string' &&
+      Number.isInteger(h.n) && h.n >= 1 && h.n <= 1000 &&
+      typeof h.unit === 'number' && h.unit > 0 && Array.isArray(h.marked));
+  }
+  function load(){
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (raw){ const s = JSON.parse(raw); if (valid(s)) return s; }
+    } catch(e){}
+    return emptyState();
+  }
+  function save(){
+    try { localStorage.setItem(KEY, JSON.stringify(state)); }
+    catch(e){
+      if (!storageWarned){ storageWarned = true; toast('Este navegador no guarda datos. Haz una copia de seguridad.'); }
+    }
+  }
+  let state = load();
+  state.huchas.forEach(h => { if (!Array.isArray(h.undo)) h.undo = []; });
+  const active = () => state.huchas.find(h => h.id === state.activeId) || null;
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+
+  // ---------- Formato ----------
+  const isWhole = u => Math.abs(u - Math.round(u)) < 1e-9;
+  function money(v, unit){
+    const d = isWhole(unit) ? 0 : 2;
+    return new Intl.NumberFormat('es-ES', { style:'currency', currency:'EUR', minimumFractionDigits:d, maximumFractionDigits:d }).format(v);
+  }
+  function cellLabel(i, unit){
+    const v = i * unit;
+    return isWhole(unit) ? String(Math.round(v)) : v.toLocaleString('es-ES', { minimumFractionDigits:2, maximumFractionDigits:2 });
+  }
+  const round2 = v => Math.round(v * 100) / 100;
+  const totalOf = h => round2(h.unit * h.n * (h.n + 1) / 2);
+  const savedOf = h => round2(h.unit * h.marked.reduce((a,b) => a + b, 0));
+
+  // ---------- Render ----------
+  function render(){
+    const h = active();
+    $('emptyView').hidden = !!h;
+    $('mainView').hidden = !h;
+    $('picker').hidden = !h;
+    $('menuBtn').hidden = !h;
+    if (!h) return;
+    const pk = $('picker');
+    pk.innerHTML = '';
+    state.huchas.forEach(x => {
+      const o = document.createElement('option');
+      o.value = x.id; o.textContent = x.name; o.selected = x.id === h.id;
+      pk.appendChild(o);
+    });
+    buildGrid(h);
+    updateStats(h);
+  }
+
+  function buildGrid(h){
+    const g = $('grid');
+    const set = new Set(h.marked);
+    const frag = document.createDocumentFragment();
+    const longLabels = cellLabel(h.n, h.unit).length > 4;
+    for (let i = 1; i <= h.n; i++){
+      const b = document.createElement('button');
+      b.className = 'cell' + (set.has(i) ? ' on' : '') + (longLabels ? ' small' : '');
+      b.dataset.n = i;
+      b.style.setProperty('--r', (((i * 37) % 13) - 6) + 'deg');
+      b.textContent = cellLabel(i, h.unit);
+      b.setAttribute('aria-pressed', set.has(i));
+      b.setAttribute('aria-label', money(i * h.unit, h.unit) + (set.has(i) ? ', ingresada' : ''));
+      frag.appendChild(b);
+    }
+    g.innerHTML = '';
+    g.appendChild(frag);
+  }
+
+  function updateCell(h, i, animate){
+    const b = $('grid').querySelector('[data-n="' + i + '"]');
+    if (!b) return;
+    const on = h.marked.includes(i);
+    b.classList.toggle('on', on);
+    b.classList.remove('hint');
+    b.setAttribute('aria-pressed', on);
+    b.setAttribute('aria-label', money(i * h.unit, h.unit) + (on ? ', ingresada' : ''));
+    if (on && animate){ b.classList.remove('stamp'); void b.offsetWidth; b.classList.add('stamp'); }
+  }
+
+  function updateStats(h){
+    const t = totalOf(h), s = savedOf(h);
+    const p = t ? Math.floor((s / t) * 1000) / 10 : 0;
+    $('saved').textContent = money(s, h.unit);
+    $('total').textContent = money(t, h.unit);
+    $('left').textContent = money(round2(t - s), h.unit);
+    $('barFill').style.width = p + '%';
+    $('bar').setAttribute('aria-valuenow', Math.round(p));
+    $('pct').textContent = p.toLocaleString('es-ES') + ' %';
+    $('cellsCount').textContent = h.marked.length + ' de ' + h.n + ' casillas';
+    $('undoBtn').disabled = h.undo.length === 0;
+    $('randomBtn').disabled = h.marked.length === h.n;
+    const done = h.marked.length === h.n;
+    $('doneMsg').classList.toggle('show', done);
+    $('doneMsg').textContent = 'Reto completado. Has ahorrado ' + money(t, h.unit) + '.';
+  }
+
+  // ---------- Acciones ----------
+  function mark(h, i, record = true){
+    if (h.marked.includes(i)) return;
+    h.marked.push(i);
+    if (record){ h.undo.push({ op:'mark', n:i }); h.undo = h.undo.slice(-50); }
+    save(); updateCell(h, i, true); updateStats(h);
+    if (record) toast('Casilla de ' + money(i * h.unit, h.unit) + ' marcada', true);
+  }
+  function unmark(h, i, record = true){
+    if (!h.marked.includes(i)) return;
+    h.marked = h.marked.filter(x => x !== i);
+    if (record){ h.undo.push({ op:'unmark', n:i }); h.undo = h.undo.slice(-50); }
+    save(); updateCell(h, i, false); updateStats(h);
+    if (record) toast('Casilla de ' + money(i * h.unit, h.unit) + ' desmarcada', true);
+  }
+  function undo(){
+    if (locked){ toast('Hucha bloqueada. Toca el candado para editar.'); return; }
+    bumpLock();
+    const h = active(); if (!h || !h.undo.length) return;
+    const last = h.undo.pop();
+    if (last.op === 'mark') unmark(h, last.n, false); else mark(h, last.n, false);
+    save(); updateStats(h);
+    toast('Deshecho');
+  }
+
+  $('grid').addEventListener('click', async e => {
+    const b = e.target.closest('.cell'); if (!b) return;
+    const h = active(); const i = Number(b.dataset.n);
+    if (locked){ toast('Hucha bloqueada. Toca el candado para editar.'); return; }
+    bumpLock();
+    if (h.marked.includes(i)){
+      const ok = await confirmDlg('¿Desmarcar esta casilla?', 'Se restarán ' + money(i * h.unit, h.unit) + ' del bote.', 'Desmarcar');
+      if (ok) unmark(h, i);
+    } else {
+      const ok = await confirmDlg('¿Marcar esta casilla?', 'Se sumarán ' + money(i * h.unit, h.unit) + ' al bote.', 'Marcar');
+      if (ok) mark(h, i);
+    }
+    bumpLock();
+  });
+  $('undoBtn').addEventListener('click', undo);
+
+  // ---------- Candado ----------
+  let locked = true, lockTimer;
+  const LOCK_IDLE = 30000;
+  function setLock(v){
+    locked = v;
+    $('lockBtn').setAttribute('aria-pressed', v);
+    $('lockLabel').textContent = v ? 'Bloqueado' : 'Desbloqueado';
+    $('lockShackle').setAttribute('d', v ? 'M8 11V7a4 4 0 0 1 8 0v4' : 'M8 11V7a4 4 0 0 1 7.5-2');
+    $('grid').classList.toggle('locked', v);
+    clearTimeout(lockTimer);
+    if (!v) lockTimer = setTimeout(() => { setLock(true); toast('Hucha bloqueada'); }, LOCK_IDLE);
+  }
+  function bumpLock(){ if (!locked) setLock(false); }
+  $('lockBtn').addEventListener('click', () => { setLock(!locked); toast(locked ? 'Hucha bloqueada' : 'Desbloqueada. Se bloquea sola tras 30 s sin uso.'); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) setLock(true); });
+
+  // Casilla al azar
+  let randPick = null;
+  function pickRandom(){
+    const h = active();
+    const set = new Set(h.marked);
+    const free = [];
+    for (let i = 1; i <= h.n; i++) if (!set.has(i) && i !== randPick) free.push(i);
+    if (!free.length){
+      if (randPick && !set.has(randPick)) return randPick;
+      return null;
+    }
+    return free[Math.floor(Math.random() * free.length)];
+  }
+  function showRandom(){
+    const h = active();
+    const n = pickRandom();
+    if (n === null){ toast('No quedan casillas libres'); return; }
+    $('grid').querySelectorAll('.hint').forEach(x => x.classList.remove('hint'));
+    randPick = n;
+    $('randAmount').textContent = money(n * h.unit, h.unit);
+    const b = $('grid').querySelector('[data-n="' + n + '"]');
+    if (b){ b.classList.add('hint'); }
+    if (!$('randDlg').open) $('randDlg').showModal();
+  }
+  $('randomBtn').addEventListener('click', () => { randPick = null; showRandom(); });
+  $('randOther').addEventListener('click', showRandom);
+  $('randMark').addEventListener('click', () => {
+    const h = active();
+    $('randDlg').close();
+    if (randPick){ mark(h, randPick); scrollToCell(randPick); }
+    randPick = null;
+  });
+  $('randDlg').addEventListener('close', () => {
+    if (randPick) scrollToCell(randPick);
+  });
+  function scrollToCell(n){
+    const b = $('grid').querySelector('[data-n="' + n + '"]');
+    if (!b) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    b.scrollIntoView({ block:'center', behavior: reduce ? 'auto' : 'smooth' });
+  }
+
+  // Selector de hucha
+  $('picker').addEventListener('change', e => { state.activeId = e.target.value; save(); render(); });
+
+  // ---------- Nueva / editar hucha ----------
+  let editing = null; // id si se está renombrando
+  function openNew(){
+    editing = null;
+    $('newTitle').textContent = 'Nueva hucha';
+    $('fSubmit').textContent = 'Crear hucha';
+    $('fName').value = 'Reto ' + (state.huchas.length + 1);
+    $('fN').value = 200; $('fUnit').value = 1;
+    $('fN').disabled = false; $('fUnit').disabled = false;
+    $('nChips').style.display = '';
+    $('fErr').textContent = '';
+    syncChips(); updatePreview();
+    $('newDlg').showModal();
+  }
+  function openRename(){
+    const h = active(); editing = h.id;
+    $('newTitle').textContent = 'Cambiar nombre';
+    $('fSubmit').textContent = 'Guardar';
+    $('fName').value = h.name; $('fN').value = h.n; $('fUnit').value = h.unit;
+    $('fN').disabled = true; $('fUnit').disabled = true;
+    $('nChips').style.display = 'none';
+    $('fErr').textContent = '';
+    updatePreview();
+    $('newDlg').showModal();
+  }
+  function syncChips(){
+    const n = Number($('fN').value);
+    $('nChips').querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', Number(c.dataset.n) === n));
+  }
+  function updatePreview(){
+    const n = Math.floor(Number($('fN').value)), u = Number($('fUnit').value);
+    $('fPreview').textContent = (n >= 1 && u > 0) ? money(round2(u * n * (n + 1) / 2), u) : 'Revisa los datos';
+  }
+  $('nChips').addEventListener('click', e => {
+    const c = e.target.closest('.chip'); if (!c) return;
+    $('fN').value = c.dataset.n; syncChips(); updatePreview();
+  });
+  $('fN').addEventListener('input', () => { syncChips(); updatePreview(); });
+  $('fUnit').addEventListener('input', updatePreview);
+  $('newForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const name = $('fName').value.trim();
+    if (!name){ $('fErr').textContent = 'Escribe un nombre.'; return; }
+    if (editing){
+      const h = state.huchas.find(x => x.id === editing);
+      h.name = name; save(); $('newDlg').close(); render(); toast('Nombre guardado');
+      return;
+    }
+    const n = Number($('fN').value), u = round2(Number($('fUnit').value));
+    if (!Number.isInteger(n) || n < 10 || n > 1000){ $('fErr').textContent = 'El número debe estar entre 10 y 1000.'; return; }
+    if (!(u >= 0.01 && u <= 100)){ $('fErr').textContent = 'El valor debe estar entre 0,01 y 100 €.'; return; }
+    const h = { id: uid(), name, n, unit: u, marked: [], undo: [], created: Date.now() };
+    state.huchas.push(h); state.activeId = h.id;
+    save(); $('newDlg').close(); render(); window.scrollTo(0,0);
+  });
+
+  // ---------- Menú ----------
+  $('menuBtn').addEventListener('click', () => { $('menuTitle').textContent = active().name; $('menuDlg').showModal(); });
+  $('emptyCreate').addEventListener('click', openNew);
+  $('mNew').addEventListener('click', () => { $('menuDlg').close(); openNew(); });
+  $('mRename').addEventListener('click', () => { $('menuDlg').close(); openRename(); });
+  $('mReset').addEventListener('click', async () => {
+    $('menuDlg').close();
+    const h = active();
+    if (await confirmDlg('¿Empezar de cero?', 'Se desmarcarán las ' + h.marked.length + ' casillas de ' + h.name + '. No se puede deshacer.', 'Empezar de cero', true)){
+      h.marked = []; h.undo = []; save(); render(); toast('Hucha reiniciada');
+    }
+  });
+  $('mDelete').addEventListener('click', async () => {
+    $('menuDlg').close();
+    const h = active();
+    if (await confirmDlg('¿Borrar ' + h.name + '?', 'Se perderá todo su progreso. No se puede deshacer.', 'Borrar hucha', true)){
+      state.huchas = state.huchas.filter(x => x.id !== h.id);
+      state.activeId = state.huchas.length ? state.huchas[0].id : null;
+      save(); render(); toast('Hucha borrada');
+    }
+  });
+
+  // ---------- Copia de seguridad ----------
+  $('mBackup').addEventListener('click', () => {
+    $('menuDlg').close();
+    $('backOut').value = JSON.stringify({ app:'RetoHucha', v:1, fecha:new Date().toISOString(), ...state });
+    $('backIn').value = ''; $('backErr').textContent = '';
+    $('backDlg').showModal();
+  });
+  $('backCopy').addEventListener('click', async () => {
+    const t = $('backOut');
+    try { await navigator.clipboard.writeText(t.value); toast('Copia copiada'); }
+    catch(e){
+      t.focus(); t.select();
+      try { document.execCommand('copy'); toast('Copia copiada'); }
+      catch(e2){ toast('Selecciona el texto y cópialo a mano'); }
+    }
+  });
+  $('backRestore').addEventListener('click', async () => {
+    let s;
+    try { s = JSON.parse($('backIn').value); } catch(e){ $('backErr').textContent = 'El texto no es una copia válida.'; return; }
+    const data = { huchas: s.huchas, activeId: s.activeId };
+    if (!valid(data)){ $('backErr').textContent = 'El texto no es una copia válida.'; return; }
+    $('backDlg').close();
+    if (await confirmDlg('¿Restaurar la copia?', 'Sustituye tus ' + state.huchas.length + ' huchas por las ' + data.huchas.length + ' de la copia.', 'Restaurar', true)){
+      data.huchas.forEach(h => {
+        if (!Array.isArray(h.undo)) h.undo = [];
+        h.marked = [...new Set(h.marked.filter(x => Number.isInteger(x) && x >= 1 && x <= h.n))];
+      });
+      if (!data.huchas.some(h => h.id === data.activeId)) data.activeId = data.huchas[0] ? data.huchas[0].id : null;
+      state = data; save(); render(); toast('Copia restaurada');
+    }
+  });
+
+  // ---------- Utilidades ----------
+  document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => b.closest('dialog').close()));
+  document.querySelectorAll('dialog').forEach(d => d.addEventListener('click', e => { if (e.target === d) d.close(); }));
+
+  function confirmDlg(title, text, okLabel, danger){
+    return new Promise(res => {
+      const d = $('confDlg');
+      $('confTitle').textContent = title; $('confText').textContent = text;
+      const yes = $('confYes'); yes.textContent = okLabel || 'Aceptar';
+      yes.className = 'btn ' + (danger ? 'btn-danger' : 'btn-primary'); yes.style.flex = 'none';
+      let result = false;
+      const onYes = () => { result = true; d.close(); };
+      const onNo = () => d.close();
+      const onClose = () => { yes.removeEventListener('click', onYes); $('confNo').removeEventListener('click', onNo); d.removeEventListener('close', onClose); res(result); };
+      yes.addEventListener('click', onYes); $('confNo').addEventListener('click', onNo); d.addEventListener('close', onClose);
+      d.showModal();
+    });
+  }
+
+  let toastTimer;
+  function toast(msg, withUndo){
+    $('toastText').textContent = msg;
+    $('toastAction').hidden = !withUndo;
+    $('toast').classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => $('toast').classList.remove('show'), withUndo ? 4500 : 2200);
+  }
+  $('toastAction').addEventListener('click', () => { $('toast').classList.remove('show'); undo(); });
+
+  render();
+})();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+}
+</script>
+</body>
+</html>
