@@ -1,2 +1,2 @@
 # RetoHucha
-A simple savings challenge app: cross off numbered squares as you save and watch your piggy bank fill up.
+RetoHucha turns saving money into a game. Pick a range, such as 1 to 200, and each number becomes an amount to set aside. Cross off a square every time you save that amount until the board is complete; 1 to 200 adds up to €20,100. You can run several challenges at once, let the app pick a random square for you, undo mistakes, and lock the board so stray taps don’t change your progress. It installs on iPhone and Android straight from the browser, works offline, and keeps all your data on your own phone.
